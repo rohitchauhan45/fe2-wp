@@ -1,0 +1,358 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { isTokenValid, isTokenExpiredResponse, removeToken, getUserType } from '../utils/auth'
+
+function Dashboard() {
+  const navigate = useNavigate()
+  const backendBaseUrl = import.meta.env.VITE_API_URL || 'https://store-documents.vercel.app/api'
+
+  // Google Drive states
+  const [hasGoogleToken, setHasGoogleToken] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(true)
+  const [isDisconnecting, setIsDisconnecting] = useState(false)
+
+  // Phone number modal state
+  const [showPhoneModal, setShowPhoneModal] = useState(false)
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const countryCode = '91' // Fixed to India (91)
+  const [phoneError, setPhoneError] = useState('')
+
+  const urlParams = new URLSearchParams(window.location.search)
+  const driveConnectedParam = urlParams.get('drive_connected') === 'true'
+  const error = urlParams.get('error')
+  const errorMessage = urlParams.get('error_message') || urlParams.get('error_description')
+
+  // Helper function to handle token expiration
+  const handleTokenExpiration = () => {
+    removeToken()
+    navigate('/login')
+  }
+
+  // Check Google connection status using userId from token
+  const checkGoogleConnectionWithPhone = async () => {
+    try {
+      setIsGoogleLoading(true)
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://store-documents.vercel.app/api'
+      const response = await fetch(`${apiUrl}/googleAuth/token`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('whatsappDocsToken') || ''}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (isTokenExpiredResponse(response)) {
+        handleTokenExpiration()
+        return
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log('Google connection check result:', data)
+
+      // Check if Google Drive is connected by verifying accessToken exists
+      // After disconnect, accessToken is set to null, so hasAccessToken will be false
+      const isConnected = data.hasAccessToken === true
+
+      setHasGoogleToken(isConnected)
+    } catch (err) {
+      console.error('Error checking Google connection:', err)
+      setHasGoogleToken(false)
+    } finally {
+      setIsGoogleLoading(false)
+    }
+  }
+
+  const handleDisconnect = async () => {
+    try {
+      setIsDisconnecting(true)
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://store-documents.vercel.app/api'
+      const response = await fetch(`${apiUrl}/googleAuth/disconnect`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('whatsappDocsToken') || ''}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (isTokenExpiredResponse(response)) {
+        handleTokenExpiration()
+        return
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || 'Failed to disconnect Google Drive')
+      }
+
+      const data = await response.json()
+      if (data.success) {
+        setHasGoogleToken(false)
+      } else {
+        throw new Error(data.message || 'Failed to disconnect Google Drive')
+      }
+    } catch (err) {
+      console.error('Error disconnecting Google Drive:', err)
+      // Silently handle error - UI will show disconnected state
+    } finally {
+      setIsDisconnecting(false)
+      setIsGoogleLoading(false)
+    }
+  }
+
+  // Check authentication on mount
+  useEffect(() => {
+    // Token validation is now handled by ProtectedRoute, but we check here too for safety
+    if (!isTokenValid()) {
+      navigate('/login')
+      return
+    }
+
+    // Check if user is Admin and redirect to AdminDashboard
+    const userType = getUserType()
+    if (userType === 'Admin') {
+      navigate('/admin-dashboard')
+      return
+    }
+
+    // Check Google connection status directly using token
+    checkGoogleConnectionWithPhone()
+
+    // Clean URL params after reading
+    if (driveConnectedParam || error) {
+      window.history.replaceState({}, document.title, window.location.pathname)
+      // Refresh connection status after successful connection
+      if (driveConnectedParam) {
+        // Wait a bit for database to be updated, then check connection
+        setTimeout(() => {
+          checkGoogleConnectionWithPhone()
+        }, 1000)
+      }
+    }
+  }, [])
+
+  const formatPhoneNumberWithCountryCode = (phone, countryCode) => {
+    // Remove all non-digit characters
+    const digitsOnly = phone.replace(/\D/g, '')
+    // Combine country code with phone number (remove leading zeros from phone if present)
+    const cleanPhone = digitsOnly.replace(/^0+/, '')
+    return countryCode + cleanPhone
+  }
+
+  const handlePhoneSubmit = (e) => {
+    e.preventDefault()
+    setPhoneError('')
+
+    if (!phoneNumber.trim()) {
+      setPhoneError('Phone number is required')
+      return
+    }
+
+    // Validate phone number (digits only, 7-15 digits total)
+    const digitsOnly = phoneNumber.replace(/\D/g, '')
+    if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+      setPhoneError('Please enter a valid phone number (7-15 digits)')
+      return
+    }
+
+    // Format phone number with country code (e.g., "917698489306")
+    const formattedPhone = formatPhoneNumberWithCountryCode(phoneNumber, countryCode)
+
+    // Get token from localStorage
+    const token = localStorage.getItem('whatsappDocsToken')
+    if (!token) {
+      alert('Authentication token not found. Please login again.')
+      navigate('/login')
+      return
+    }
+
+    // Redirect to Google OAuth with phone number and token
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://store-documents.vercel.app/api'
+    window.location.href = `${apiUrl}/googleAuth/google?phone=${encodeURIComponent(formattedPhone)}&token=${encodeURIComponent(token)}`
+  }
+
+  const connectGoogleDrive = () => {
+    setShowPhoneModal(true)
+  }
+
+
+  return (
+    <div className="flex-1 min-h-screen w-full bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Main Content */}
+      <main className="flex justify-center items-center max-w-4xl mx-auto min-h-screen ">
+
+        <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 w-full ">
+          {/* Google Drive Connection Card */}
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <img
+                  src="/image.png"
+                  alt="Google Drive"
+                  className="w-10 h-10"
+
+                />
+                <div className="hidden w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold">
+                  GD
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">Google Drive</h2>
+                  <p className="text-sm text-gray-600">Store documents in Google Drive</p>
+                </div>
+              </div>
+            </div>
+
+            {isGoogleLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : hasGoogleToken ? (
+              <div className="space-y-4">
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <div className="mb-4">
+                    <svg className="w-16 h-16 text-green-600 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="flex items-center gap-2 text-green-600 bg-green-50 p-4 rounded-lg mb-4">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="font-medium">Google Drive Connected</span>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    Enjoy with WhatsAppBotDoc in your WhatsApp! 🎉
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Your Google Drive is connected and ready. Start sending documents via WhatsApp!
+                  </p>
+                  <button
+                    onClick={handleDisconnect}
+                    disabled={isDisconnecting}
+                    className={`w-auto px-4 py-3 text-white font-semibold rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${isDisconnecting
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-red-500 hover:bg-red-600'
+                      }`}
+                  >
+                    {isDisconnecting ? 'Disconnecting...' : 'Disconnect Google Drive'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={connectGoogleDrive}
+                className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              >
+                Connect Google Drive
+              </button>
+            )}
+
+            {/* Connection Success Message */}
+            {driveConnectedParam && (
+              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm font-medium text-green-800">
+                  ✅ Google Drive connected successfully!
+                </p>
+              </div>
+            )}
+
+            {/* Connection Error */}
+            {error && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm font-medium text-red-800">❌ Connection Failed</p>
+                <p className="text-sm text-red-600 mt-1">{errorMessage || `Error: ${error}`}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Phone Number Modal */}
+      {showPhoneModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-fade-in">
+
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">
+              Connect Google Drive
+            </h3>
+
+            <p className="text-sm text-gray-600 mb-4">
+              Enter your phone number to connect Google Drive.
+              This number will be used to send your welcome message on WhatsApp.
+            </p>
+
+            {/* PHONE INPUT + PERMISSION */}
+            <form onSubmit={handlePhoneSubmit}>
+
+              {/* STEP 1: PHONE INPUT FIELD */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </label>
+
+                <div className="flex gap-2">
+                  {/* Country Code */}
+                  <div className="w-32 px-3 py-3 border border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center text-gray-700 font-medium">
+                    🇮🇳 +91
+                  </div>
+
+                  {/* Number Input */}
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => {
+                      setPhoneNumber(e.target.value)
+                      setPhoneError('')
+                    }}
+                    placeholder="7********6"
+                    className={`flex-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${phoneError ? "border-red-500" : "border-gray-300"
+                      }`}
+                  />
+                </div>
+
+                {phoneError && (
+                  <p className="mt-2 text-sm text-red-600">{phoneError}</p>
+                )}
+              </div>
+
+              {/* STEP 3: ACTION BUTTONS */}
+              <div className="flex gap-3 mt-4">
+
+                {/* Cancel */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPhoneModal(false);
+                    setPhoneNumber("");
+                    setPhoneError("");
+                  }}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                >
+                  Cancel
+                </button>
+
+                {/* Continue to Google Login */}
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg"
+                >
+                  Continue
+                </button>
+
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+
+    </div>
+  )
+}
+
+export default Dashboard
+
