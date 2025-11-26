@@ -183,57 +183,57 @@ function Dashboard() {
   return (
     <div className="flex-1 min-h-screen w-full bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Main Content */}
-      <main className="flex justify-center items-center max-w-4xl mx-auto min-h-screen ">
+      <main className="flex justify-center items-center max-w-[990px] mx-auto min-h-screen px-3 sm:px-4 pt-20 sm:pt-28 pb-6 sm:pb-10">
 
-        <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 w-full ">
+        <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 sm:gap-6 w-full ">
           {/* Google Drive Connection Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
+          <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-200">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <img
                   src="/image.png"
                   alt="Google Drive"
-                  className="w-10 h-10"
+                  className="w-8 h-8 sm:w-10 sm:h-10"
 
                 />
                 <div className="hidden w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold">
                   GD
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">Google Drive</h2>
-                  <p className="text-sm text-gray-600">Store documents in Google Drive</p>
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Google Drive</h2>
+                  <p className="text-xs sm:text-sm text-gray-600">Store documents in Google Drive</p>
                 </div>
               </div>
             </div>
 
             {isGoogleLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <div className="flex items-center justify-center py-6 sm:py-8">
+                <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600"></div>
               </div>
             ) : hasGoogleToken ? (
-              <div className="space-y-4">
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <div className="mb-4">
-                    <svg className="w-16 h-16 text-green-600 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex flex-col items-center justify-center py-6 sm:py-8 text-center">
+                  <div className="mb-3 sm:mb-4">
+                    <svg className="w-12 h-12 sm:w-16 sm:h-16 text-green-600 mx-auto" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <div className="flex items-center gap-2 text-green-600 bg-green-50 p-4 rounded-lg mb-4">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 sm:p-4 rounded-lg mb-3 sm:mb-4">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    <span className="font-medium">Google Drive Connected</span>
+                    <span className="text-sm sm:text-base font-medium">Google Drive Connected</span>
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 px-2">
                     Enjoy with WhatsAppBotDoc in your WhatsApp! 🎉
                   </h3>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 px-2">
                     Your Google Drive is connected and ready. Start sending documents via WhatsApp!
                   </p>
                   <button
                     onClick={handleDisconnect}
                     disabled={isDisconnecting}
-                    className={`w-auto px-4 py-3 text-white font-semibold rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${isDisconnecting
+                    className={`w-full sm:w-auto px-4 py-2.5 sm:py-3 text-sm sm:text-base text-white font-semibold rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${isDisconnecting
                       ? 'bg-gray-400 cursor-not-allowed'
                       : 'bg-red-500 hover:bg-red-600'
                       }`}
@@ -245,7 +245,7 @@ function Dashboard() {
             ) : (
               <button
                 onClick={connectGoogleDrive}
-                className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                className="w-full px-4 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base text-white font-semibold rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               >
                 Connect Google Drive
               </button>
@@ -253,8 +253,8 @@ function Dashboard() {
 
             {/* Connection Success Message */}
             {driveConnectedParam && (
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm font-medium text-green-800">
+              <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-xs sm:text-sm font-medium text-green-800">
                   ✅ Google Drive connected successfully!
                 </p>
               </div>
@@ -262,9 +262,9 @@ function Dashboard() {
 
             {/* Connection Error */}
             {error && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm font-medium text-red-800">❌ Connection Failed</p>
-                <p className="text-sm text-red-600 mt-1">{errorMessage || `Error: ${error}`}</p>
+              <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-xs sm:text-sm font-medium text-red-800">❌ Connection Failed</p>
+                <p className="text-xs sm:text-sm text-red-600 mt-1">{errorMessage || `Error: ${error}`}</p>
               </div>
             )}
           </div>
@@ -273,14 +273,14 @@ function Dashboard() {
 
       {/* Phone Number Modal */}
       {showPhoneModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-fade-in">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-6 animate-fade-in max-h-[90vh] overflow-y-auto">
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
               Connect Google Drive
             </h3>
 
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
               Enter your phone number to connect Google Drive.
               This number will be used to send your welcome message on WhatsApp.
             </p>
@@ -289,14 +289,14 @@ function Dashboard() {
             <form onSubmit={handlePhoneSubmit}>
 
               {/* STEP 1: PHONE INPUT FIELD */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="mb-3 sm:mb-4">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                   Phone Number
                 </label>
 
                 <div className="flex gap-2">
                   {/* Country Code */}
-                  <div className="w-32 px-3 py-3 border border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center text-gray-700 font-medium">
+                  <div className="w-24 sm:w-32 px-2 sm:px-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center text-xs sm:text-sm text-gray-700 font-medium">
                     🇮🇳 +91
                   </div>
 
@@ -309,18 +309,18 @@ function Dashboard() {
                       setPhoneError('')
                     }}
                     placeholder="7********6"
-                    className={`flex-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${phoneError ? "border-red-500" : "border-gray-300"
+                    className={`flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${phoneError ? "border-red-500" : "border-gray-300"
                       }`}
                   />
                 </div>
 
                 {phoneError && (
-                  <p className="mt-2 text-sm text-red-600">{phoneError}</p>
+                  <p className="mt-2 text-xs sm:text-sm text-red-600">{phoneError}</p>
                 )}
               </div>
 
               {/* STEP 3: ACTION BUTTONS */}
-              <div className="flex gap-3 mt-4">
+              <div className="flex gap-2 sm:gap-3 mt-3 sm:mt-4">
 
                 {/* Cancel */}
                 <button
@@ -330,7 +330,7 @@ function Dashboard() {
                     setPhoneNumber("");
                     setPhoneError("");
                   }}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                  className="flex-1 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
                 >
                   Cancel
                 </button>
@@ -338,7 +338,7 @@ function Dashboard() {
                 {/* Continue to Google Login */}
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg"
+                  className="flex-1 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg"
                 >
                   Continue
                 </button>

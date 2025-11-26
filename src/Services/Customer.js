@@ -23,6 +23,7 @@ export const getCustomerDetails = async() =>{
         const token = localStorage.getItem('whatsappDocsToken')
         const apiUrl = import.meta.env.VITE_API_URL || 'https://store-documents.vercel.app/api'
 
+        console.log("apiUrl : ", apiUrl)
         const response = await axios.get(`${apiUrl}/customer`,{
             headers:{
                 'Authorization': `Bearer ${token}`,
