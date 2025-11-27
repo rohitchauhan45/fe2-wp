@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ArrowRightLeft } from 'lucide-react'
 import { isTokenValid, isTokenExpiredResponse, removeToken, getUserType } from '../utils/auth'
+import { getUserDetails } from '../Services/Customer'
 
 function Dashboard() {
   const navigate = useNavigate()
@@ -10,6 +12,7 @@ function Dashboard() {
   const [hasGoogleToken, setHasGoogleToken] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(true)
   const [isDisconnecting, setIsDisconnecting] = useState(false)
+  const [userProfile, setUserProfile] = useState({ phoneNumber: '', email: '' })
 
   // Phone number modal state
   const [showPhoneModal, setShowPhoneModal] = useState(false)
@@ -154,8 +157,8 @@ function Dashboard() {
 
     // Validate phone number (digits only, 7-15 digits total)
     const digitsOnly = phoneNumber.replace(/\D/g, '')
-    if (digitsOnly.length < 7 || digitsOnly.length > 15) {
-      setPhoneError('Please enter a valid phone number (7-15 digits)')
+    if (digitsOnly.length !== 10) {
+      setPhoneError('Please enter a valid phone number (10 digits)')
       return
     }
 
@@ -179,6 +182,22 @@ function Dashboard() {
     setShowPhoneModal(true)
   }
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const response = await getUserDetails()
+      if (response?.success && response?.user) {
+        setUserProfile({
+          phoneNumber: response.user.phoneNumber || '',
+          email: response.user.googleMail || response.user.email || ''
+        })
+      }
+    }
+
+    fetchProfile()
+  }, [])
+
+
+
 
   return (
     <div className="flex-1 min-h-screen w-full bg-gradient-to-br from-gray-50 to-gray-100">
@@ -188,23 +207,69 @@ function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 sm:gap-6 w-full ">
           {/* Google Drive Connection Card */}
           <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-200">
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <img
-                  src="/image.png"
-                  alt="Google Drive"
-                  className="w-8 h-8 sm:w-10 sm:h-10"
 
-                />
-                <div className="hidden w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold">
-                  GD
+
+            {!isGoogleLoading && hasGoogleToken && (
+
+              <div className="mb-1 w-full grid grid-cols-[1fr_auto_1fr] items-center gap-5 sm:gap-8">
+
+                {/* WhatsApp */}
+                <div className="flex items-center justify-end gap-4 min-w-0">
+                  <img
+                    src="/whatsapp.png"
+                    alt="WhatsApp"
+                    className="h-9 w-9 flex-shrink-0"
+                  />
+                  <p className="text-lg font-semibold text-gray-900 truncate max-w-[160px] text-right">
+                    {userProfile.phoneNumber.slice(2)}
+                  </p>
                 </div>
-                <div>
-                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Google Drive</h2>
-                  <p className="text-xs sm:text-sm text-gray-600">Store documents in Google Drive</p>
+
+                {/* Arrow */}
+                <div className="flex items-center justify-center px-3">
+                  <ArrowRightLeft className="h-9 w-9 text-gray-600" />
+                </div>
+
+                {/* Google Drive */}
+                <div className="flex items-center justify-start gap-4 min-w-0">
+                  <img
+                    src="/google-drive.png"
+                    alt="Google Drive"
+                    className="h-9 w-9 flex-shrink-0"
+                  />
+                  <p className="text-lg font-semibold text-gray-900 truncate max-w-[235px] text-left">
+                    {userProfile.email || "Email not available"}
+                  </p>
+                </div>
+
+              </div>
+
+            )}
+
+            {(isGoogleLoading || !hasGoogleToken) && (
+              <div className="mb-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full">
+                <div className="flex items-center gap-2 h-12 sm:h-14 w-auto">
+                  <div className="flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14">
+                    <img src="/whatsapp.png" alt="WhatsApp" className="h-10 w-10 object-contain" />
+                  </div>
+                  <span className="text-sm sm:text-lg font-semibold text-gray-800 tracking-wide">
+                    WhatsApp
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-center h-10 w-10 flex-shrink-0">
+                  <ArrowRightLeft className="h-8 w-8 text-gray-400" />
+                </div>
+                <div className="flex items-center gap-2 h-12 sm:h-14 w-auto">
+                  <div className="flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 ">
+                    <img src="/google-drive.png" alt="Google Drive" className="h-10 w-10 object-contain" />
+                  </div>
+                  <span className="text-sm sm:text-lg font-semibold text-gray-800 tracking-wide">
+                    Google Drive
+                  </span>
                 </div>
               </div>
-            </div>
+            )}
 
             {isGoogleLoading ? (
               <div className="flex items-center justify-center py-6 sm:py-8">
@@ -225,10 +290,10 @@ function Dashboard() {
                     <span className="text-sm sm:text-base font-medium">Google Drive Connected</span>
                   </div>
                   <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 px-2">
-                    Enjoy with WhatsAppBotDoc in your WhatsApp! 🎉
+                    Enjoy with WhatsAppBot in your WhatsApp! 🎉
                   </h3>
                   <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 px-2">
-                    Your Google Drive is connected and ready. Start sending documents via WhatsApp!
+                    Your Google Drive is connected and ready. Start Conversations via WhatsApp!
                   </p>
                   <button
                     onClick={handleDisconnect}
@@ -282,7 +347,7 @@ function Dashboard() {
 
             <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
               Enter your phone number to connect Google Drive.
-              This number will be used to send your welcome message on WhatsApp.
+              This number will be used to conversessions with WhatsApp.
             </p>
 
             {/* PHONE INPUT + PERMISSION */}
@@ -297,7 +362,7 @@ function Dashboard() {
                 <div className="flex gap-2">
                   {/* Country Code */}
                   <div className="w-24 sm:w-32 px-2 sm:px-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center text-xs sm:text-sm text-gray-700 font-medium">
-                    🇮🇳 +91
+                    India +91
                   </div>
 
                   {/* Number Input */}

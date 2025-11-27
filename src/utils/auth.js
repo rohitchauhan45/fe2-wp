@@ -1,11 +1,31 @@
-/**
- * Utility functions for authentication and token management
- */
+import axios from 'axios'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://store-documents.vercel.app/api'
+
+const buildError = (error, fallbackMessage) => {
+  const message = error?.response?.data?.message || fallbackMessage
+  return new Error(message)
+}
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('whatsappDocsToken')
+  const headers = {
+    'Content-Type': 'application/json'
+  }
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+  return headers
+}
 
 /**
- * Decode JWT token without verification (to check expiration)
- * Note: This only checks expiration, not signature validity
- */
+* Utility functions for authentication and token management
+*/
+
+/**
+* Decode JWT token without verification (to check expiration)
+* Note: This only checks expiration, not signature validity
+*/
 const decodeToken = (token) => {
   try {
     const base64Url = token.split('.')[1]
@@ -89,3 +109,42 @@ export const getUserType = () => {
   }
 }
 
+export const forgetPassword = async (email) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/auth/forget-password`,
+      email ? { email } : {},
+      { headers: getAuthHeaders() }
+    )
+    return response.data
+  } catch (error) {
+    console.error('Error forgetting Password:', error)
+    throw buildError(error, 'Unable to start password reset')
+  }
+}
+
+export const verifyOtp = async (token, otp) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/auth/verify-otp`, {
+      token,
+      otp
+    })
+    return response.data
+  } catch (error) {
+    console.error('Error verifying OTP:', error)
+    throw buildError(error, 'Invalid OTP, please try again')
+  }
+}
+
+export const resetPassword = async ({ token, otp, password }) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/auth/reset-password`, {
+      token,
+      password
+    })
+    return response.data
+  } catch (error) {
+    console.error('Error resetting Password:', error)
+    throw buildError(error, 'Unable to reset password')
+  }
+}

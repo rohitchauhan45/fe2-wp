@@ -6,6 +6,16 @@ import AdminSideBar from './AdminSideBar.jsx'
 import AdminAnalyting from './AdminAnalyting.jsx'
 import AdminDashboard from './AdminDashboard.jsx'
 
+const TABS = {
+  CUSTOMER: 'customer',
+  ANALYTICS: 'analytics'
+}
+
+const TAB_TITLES = {
+  [TABS.CUSTOMER]: 'Customer',
+  [TABS.ANALYTICS]: 'Analytics'
+}
+
 function Admin() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('customer')
@@ -38,7 +48,7 @@ function Admin() {
     <div className="flex min-h-screen bg-gray-50">
       <AdminSideBar activeTab={activeTab} onSelectTab={setActiveTab} onLogout={handleLogout} />
       <div className="flex-1 min-h-screen">
-        <Navbar variant="admin" />
+        <Navbar variant="admin" title={TAB_TITLES[activeTab] || 'WhatsAppBotDocs'} />
         {renderContent()}
       </div>
     </div>

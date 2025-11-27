@@ -6,8 +6,13 @@ import CustomerFolder from './CustomerFolder'
 import CustomerGoogle from './CustomerGoogle'
 
 const TABS = {
-  DETAILS: 'details',
-  GOOGLE: 'google-drive'
+  DETAILS: 'my-documents',
+  GOOGLE: 'connect'
+}
+
+const TAB_TITLES = {
+  [TABS.DETAILS]: 'My Documents',
+  [TABS.GOOGLE]: 'Connect'
 }
 
 function Customer() {
@@ -57,7 +62,7 @@ function Customer() {
             <Menu className="w-6 h-6 text-gray-700" />
           </button>
         )}
-        <Navbar variant="admin" />
+        <Navbar variant="customer" title={TAB_TITLES[activeTab] || 'WhatsAppBotDocs'} />
         {renderContent()}
       </div>
     </div>

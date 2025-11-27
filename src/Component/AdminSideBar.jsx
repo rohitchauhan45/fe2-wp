@@ -10,7 +10,7 @@ function AdminSideBar({ activeTab, onSelectTab, onLogout }) {
     <aside className="w-64 bg-white border-r border-gray-200 min-h-screen h-screen sticky top-0 flex flex-col">
       <div className="px-6 py-6 border-b border-gray-200">
         <p className="text-sm font-semibold text-blue-600 tracking-wide">Admin Panel</p>
-        <h1 className="text-2xl font-bold text-gray-900 mt-1">Store Docs</h1>
+        <h1 className="text-[20px] font-bold text-gray-900 mt-1">WhatsappDocSync</h1>
       </div>
 
       <nav className="flex-1 px-4 py-6 space-y-2">
@@ -36,15 +36,13 @@ function AdminSideBar({ activeTab, onSelectTab, onLogout }) {
         })}
       </nav>
 
-      <div className="px-4 py-6 border-t border-gray-200">
-        <button
-          type="button"
-          onClick={onLogout}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-red-500 text-red-600 rounded-xl text-sm font-semibold hover:bg-red-50 transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-          Logout
-        </button>
+      <div className="px-3 sm:px-4 py-4 sm:py-6 border-t border-gray-200">
+        <div className="rounded-2xl bg-blue-50 border border-blue-100 p-3 sm:p-4">
+          <p className="text-xs sm:text-sm font-semibold text-blue-900">Need Help?</p>
+          <p className="text-[10px] sm:text-xs text-blue-700 mt-1">
+            Contact Admin for any help.
+          </p>
+        </div>
       </div>
     </aside>
   )

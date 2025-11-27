@@ -5,11 +5,11 @@ function Signup() {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   })
   const [errors, setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
 
   const validateEmail = (email) => {
@@ -31,7 +31,6 @@ function Signup() {
       }))
     }
     // Clear messages when user starts typing
-    if (successMessage) setSuccessMessage('')
     if (errorMessage) setErrorMessage('')
   }
 
@@ -50,6 +49,12 @@ function Signup() {
       newErrors.password = 'Password must be at least 6 characters'
     }
 
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Please re-enter your password'
+    } else if (formData.confirmPassword !== formData.password) {
+      newErrors.confirmPassword = 'Passwords do not match'
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -63,7 +68,6 @@ function Signup() {
 
     setIsLoading(true)
     setErrorMessage('')
-    setSuccessMessage('')
 
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'https://store-documents.vercel.app/api'
@@ -97,12 +101,8 @@ function Signup() {
         if (data.token) {
           localStorage.setItem('whatsappDocsToken', data.token)
         }
-        setSuccessMessage(data.message || 'Signup successful!')
-        setFormData({ email: '', password: '' })
-        // Redirect to login page after successful signup
-        setTimeout(() => {
-          navigate('/login')
-        }, 2000)
+        setFormData({ email: '', password: '', confirmPassword: '' })
+        navigate('/login')
       } else {
         setErrorMessage(data.message || 'Signup failed. Please try again.')
       }
@@ -156,7 +156,7 @@ function Signup() {
               onChange={handleChange}
               placeholder="Enter your email"
               disabled={isLoading}
-              className={`w-full px-4 py-3 sm:py-3 md:py-3.5 text-lg sm:text-base md:text-lg border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+              className={`w-full h-12 px-4 py-3 sm:py-3 md:py-3.5 text-lg sm:text-base md:text-lg border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
                 errors.email 
                   ? 'border-red-500 focus:ring-red-500' 
                   : 'border-gray-300'
@@ -182,7 +182,7 @@ function Signup() {
               onChange={handleChange}
               placeholder="Enter your password"
               disabled={isLoading}
-              className={`w-full px-4 py-3 sm:py-3 md:py-3.5 text-lg  border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+              className={`w-full h-12 px-4 py-3 sm:py-3 md:py-3.5 text-lg  border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
                 errors.password 
                   ? 'border-red-500 focus:ring-red-500' 
                   : 'border-gray-300'
@@ -191,6 +191,32 @@ function Signup() {
             {errors.password && (
               <p className="mt-1.5 sm:mt-2 text-sm text-red-600 font-medium">
                 {errors.password}
+              </p>
+            )}
+          </div>
+
+          {/* Confirm Password Field */}
+          <div>
+            <label htmlFor="confirmPassword" className="block text-left text-lg sm:text-sm md:text-base font-semibold text-gray-700 mb-1.5">
+              Re-enter Password
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="Re-enter your password"
+              disabled={isLoading}
+              className={`w-full h-12 px-4 py-3 sm:py-3 md:py-3.5 text-lg border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                errors.confirmPassword
+                  ? 'border-red-500 focus:ring-red-500'
+                  : 'border-gray-300'
+              } ${isLoading ? 'bg-gray-50 cursor-not-allowed' : 'bg-white'}`}
+            />
+            {errors.confirmPassword && (
+              <p className="mt-1.5 sm:mt-2 text-sm text-red-600 font-medium">
+                {errors.confirmPassword}
               </p>
             )}
           </div>
@@ -220,8 +246,8 @@ function Signup() {
         </form>
 
           {/* Link to Login */}
-          <div className="mt-4 sm:mt-5 md:mt-6 text-center">
-          <p className="text-sm sm:text-sm md:text-base text-gray-600 font-medium">
+          <div className="mt-3 sm:mt-4 md:mt-5 text-center">
+          <p className="text-sm sm:text-base text-gray-600 font-medium">
               Already have an account?{' '}
               <Link to="/login" className="font-semibold text-indigo-600 hover:text-indigo-700 transition-colors">
                 Sign in
@@ -229,20 +255,10 @@ function Signup() {
             </p>
           </div>
 
-          {/* Success Message */}
-          {successMessage && (
-            <div className="mt-4 sm:mt-5 md:mt-6 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg animate-slide-down">
-              <p className="text-sm sm:text-sm md:text-base text-green-700 font-semibold flex items-center gap-2">
-                <span className="text-lg">✓</span>
-                {successMessage}
-              </p>
-            </div>
-          )}
-
           {/* Error Message */}
           {errorMessage && (
-            <div className="mt-4 sm:mt-5 md:mt-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg animate-slide-down">
-              <p className="text-sm sm:text-sm md:text-base text-red-700 font-semibold flex items-center gap-2">
+            <div className="mt-3 sm:mt-4 md:mt-5 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg animate-slide-down">
+              <p className="text-sm sm:text-base text-red-700 font-semibold flex items-center gap-2">
                 <span className="text-lg ">✕</span>
                 {errorMessage}
               </p>
