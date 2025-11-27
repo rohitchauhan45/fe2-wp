@@ -70,7 +70,14 @@ function Signup() {
     setErrorMessage('')
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://store-documents.vercel.app/api'
+
+      if(import.meta.env.VITE_API_URL){
+        throw new Error('API URL is not set')
+      }
+      
+      const apiUrl = import.meta.env.VITE_API_URL
+
+
       const response = await fetch(`${apiUrl}/auth/signup`, {
         method: 'POST',
         headers: {
