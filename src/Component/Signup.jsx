@@ -72,9 +72,10 @@ function Signup() {
     try {
 
       if(import.meta.env.VITE_API_URL){
+        console.log('API URL is not set')
         throw new Error('API URL is not set')
       }
-      
+
       const apiUrl = import.meta.env.VITE_API_URL
 
 
