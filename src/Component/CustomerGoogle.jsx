@@ -12,7 +12,8 @@ function Dashboard() {
   const [hasGoogleToken, setHasGoogleToken] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(true)
   const [isDisconnecting, setIsDisconnecting] = useState(false)
-  const [userProfile, setUserProfile] = useState({ phoneNumber: '', email: '' })
+  const [userProfile, setUserProfile] = useState(null)
+  const [isProfileLoading, setIsProfileLoading] = useState(true)
 
   // Phone number modal state
   const [showPhoneModal, setShowPhoneModal] = useState(false)
@@ -204,12 +205,22 @@ function Dashboard() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const response = await getUserDetails()
-      if (response?.success && response?.user) {
-        setUserProfile({
-          phoneNumber: response.user.phoneNumber || '',
-          email: response.user.googleMail || response.user.email || ''
-        })
+      try {
+        setIsProfileLoading(true)
+        const response = await getUserDetails()
+        if (response?.success && response?.user) {
+          setUserProfile({
+            phoneNumber: response.user.phoneNumber || '',
+            email: response.user.googleMail || response.user.email || ''
+          })
+        } else {
+          setUserProfile(null)
+        }
+      } catch (error) {
+        console.error('Failed to fetch user profile', error)
+        setUserProfile(null)
+      } finally {
+        setIsProfileLoading(false)
       }
     }
 
@@ -240,14 +251,17 @@ function Dashboard() {
                     alt="WhatsApp"
                     className="h-9 w-9 flex-shrink-0"
                   />
-                  {userProfile ? 
-                  <p className="text-lg font-semibold text-gray-900 truncate max-w-[160px] text-right">
-                    {userProfile.phoneNumber.slice(2)}
-                  </p> : 
-                  <p className="text-lg font-semibold text-gray-900 truncate max-w-[160px] text-right">
-                    Loading...
-                  </p>
-                  }
+                  {isProfileLoading ? (
+                    <div className="animate-pulse bg-gray-200 rounded-md h-7 w-32 max-w-[160px] ml-auto"></div>
+                  ) : userProfile?.phoneNumber ? (
+                    <p className="text-lg font-semibold text-gray-900 truncate max-w-[160px] text-right">
+                      {userProfile.phoneNumber.slice(2)}
+                    </p>
+                  ) : (
+                    <p className="text-lg font-semibold text-gray-900 truncate max-w-[160px] text-right">
+                      Phone not available
+                    </p>
+                  )}
                 </div>
 
                 {/* Arrow */}
@@ -262,14 +276,17 @@ function Dashboard() {
                     alt="Google Drive"
                     className="h-9 w-9 flex-shrink-0"
                   />
-                  {userProfile ? 
-                  <p className="text-lg font-semibold text-gray-900 truncate max-w-[235px] text-left">
-                    {userProfile.email || "Email not available"}
-                  </p> : 
-                  <p className="text-lg font-semibold text-gray-900 truncate max-w-[235px] text-left">
-                    Loading...
-                  </p>
-                  }
+                  {isProfileLoading ? (
+                    <div className="animate-pulse bg-gray-200 rounded-md h-7 w-48 max-w-[235px]"></div>
+                  ) : userProfile?.email ? (
+                    <p className="text-lg font-semibold text-gray-900 truncate max-w-[235px] text-left">
+                      {userProfile.email}
+                    </p>
+                  ) : (
+                    <p className="text-lg font-semibold text-gray-900 truncate max-w-[235px] text-left">
+                      Email not available
+                    </p>
+                  )}
                 </div>
 
               </div>
