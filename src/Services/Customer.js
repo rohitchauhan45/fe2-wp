@@ -39,3 +39,24 @@ export const getCustomerDetails = async() =>{
     }
 }
 
+export const checkUserExists = async(phoneNumber) =>{
+    try {
+        const token = localStorage.getItem('whatsappDocsToken')
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://store-documents.vercel.app/api'
+        const response = await axios.post(
+            `${apiUrl}/customer/exists`,
+            { phoneNumber },
+            {
+                headers:{
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        )
+        const data = await response.data
+        return data
+    } catch (error) {
+        console.error("Error checking user exists:", error)
+        return { success: false, message: 'Error checking user exists' }
+    }
+}

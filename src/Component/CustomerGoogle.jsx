@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowRightLeft } from 'lucide-react'
 import { isTokenValid, isTokenExpiredResponse, removeToken, getUserType } from '../utils/auth'
-import { getUserDetails } from '../Services/Customer'
+import { getUserDetails, checkUserExists } from '../Services/Customer'
 
 function Dashboard() {
   const navigate = useNavigate()
@@ -19,6 +19,7 @@ function Dashboard() {
   const [phoneNumber, setPhoneNumber] = useState('')
   const countryCode = '91' // Fixed to India (91)
   const [phoneError, setPhoneError] = useState('')
+  const [isPhoneSubmitting, setIsPhoneSubmitting] = useState(false)
 
   const urlParams = new URLSearchParams(window.location.search)
   const driveConnectedParam = urlParams.get('drive_connected') === 'true'
@@ -146,8 +147,12 @@ function Dashboard() {
     return countryCode + cleanPhone
   }
 
-  const handlePhoneSubmit = (e) => {
+  const handlePhoneSubmit = async (e) => {
     e.preventDefault()
+    if (isPhoneSubmitting) {
+      return
+    }
+
     setPhoneError('')
 
     if (!phoneNumber.trim()) {
@@ -173,9 +178,24 @@ function Dashboard() {
       return
     }
 
-    // Redirect to Google OAuth with phone number and token
-    const apiUrl = import.meta.env.VITE_API_URL || 'https://store-documents.vercel.app/api'
-    window.location.href = `${apiUrl}/googleAuth/google?phone=${encodeURIComponent(formattedPhone)}&token=${encodeURIComponent(token)}`
+    setIsPhoneSubmitting(true)
+    try {
+      const existsResponse = await checkUserExists(formattedPhone)
+      console.log("existsResponse", existsResponse)
+      if (!existsResponse?.success) {
+        setPhoneError(existsResponse?.message || 'Phone number not found. Please verify and try again.')
+        return
+      }
+
+      // Redirect to Google OAuth with phone number and token
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://store-documents.vercel.app/api'
+      window.location.href = `${apiUrl}/googleAuth/google?phone=${encodeURIComponent(formattedPhone)}&token=${encodeURIComponent(token)}`
+    } catch (err) {
+      console.error('Error verifying phone number:', err)
+      setPhoneError('Unable to verify phone number right now. Please try again.')
+    } finally {
+      setIsPhoneSubmitting(false)
+    }
   }
 
   const connectGoogleDrive = () => {
@@ -247,9 +267,9 @@ function Dashboard() {
             )}
 
             {(isGoogleLoading || !hasGoogleToken) && (
-              <div className="mb-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full">
+              <div className="mb-4 flex sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full">
                 <div className="flex items-center gap-2 h-12 sm:h-14 w-auto">
-                  <div className="flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14">
+                  <div className="flex items-center justify-center h-8 w-8 sm:h-10 sm:w-10">
                     <img src="/whatsapp.png" alt="WhatsApp" className="h-10 w-10 object-contain" />
                   </div>
                   <span className="text-sm sm:text-lg font-semibold text-gray-800 tracking-wide">
@@ -261,7 +281,7 @@ function Dashboard() {
                   <ArrowRightLeft className="h-8 w-8 text-gray-400" />
                 </div>
                 <div className="flex items-center gap-2 h-12 sm:h-14 w-auto">
-                  <div className="flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 ">
+                  <div className="flex items-center justify-center h-8 w-8 sm:h-10 sm:w-10 ">
                     <img src="/google-drive.png" alt="Google Drive" className="h-10 w-10 object-contain" />
                   </div>
                   <span className="text-sm sm:text-lg font-semibold text-gray-800 tracking-wide">
@@ -403,9 +423,10 @@ function Dashboard() {
                 {/* Continue to Google Login */}
                 <button
                   type="submit"
-                  className="flex-1 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg"
+                  disabled={isPhoneSubmitting}
+                  className={`flex-1 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white rounded-lg ${isPhoneSubmitting ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
                 >
-                  Continue
+                  {isPhoneSubmitting ? 'Checking...' : 'Continue'}
                 </button>
 
               </div>
