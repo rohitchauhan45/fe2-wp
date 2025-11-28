@@ -241,6 +241,7 @@ function Dashboard() {
 
 
             {!isGoogleLoading && hasGoogleToken && (
+
               <div className="mb-1 w-full grid grid-cols-[1fr_auto_1fr] items-center gap-5 sm:gap-8">
 
                 {/* WhatsApp */}
@@ -250,20 +251,19 @@ function Dashboard() {
                     alt="WhatsApp"
                     className="h-9 w-9 flex-shrink-0"
                   />
-
-                  <div className="w-[180px] text-right">
-                    {isProfileLoading ? (
-                      <div className="animate-pulse bg-gray-200 rounded-md h-7 w-full"></div>
-                    ) : userProfile?.phoneNumber ? (
-                      <p className="text-lg font-semibold text-gray-900 truncate">
-                        {userProfile.phoneNumber.slice(2)}
-                      </p>
-                    ) : (
-                      <p className="text-lg font-semibold text-gray-900 truncate">
-                        Phone not available
-                      </p>
-                    )}
-                  </div>
+                  {isProfileLoading ? (
+                    <p className="text-lg font-semibold text-gray-900 truncate max-w-[160px] text-right">
+                      Loading...
+                    </p>
+                  ) : userProfile?.phoneNumber ? (
+                    <p className="text-lg font-semibold text-gray-900 truncate max-w-[160px] text-right">
+                      {userProfile.phoneNumber.slice(2)}
+                    </p>
+                  ) : (
+                    <p className="text-lg font-semibold text-gray-900 truncate max-w-[160px] text-right">
+                      Phone not available
+                    </p>
+                  )}
                 </div>
 
                 {/* Arrow */}
@@ -278,25 +278,24 @@ function Dashboard() {
                     alt="Google Drive"
                     className="h-9 w-9 flex-shrink-0"
                   />
-
-                  <div className="w-[235px] text-left">
-                    {isProfileLoading ? (
-                      <div className="animate-pulse bg-gray-200 rounded-md h-7 w-full"></div>
-                    ) : userProfile?.email ? (
-                      <p className="text-lg font-semibold text-gray-900 truncate">
-                        {userProfile.email}
-                      </p>
-                    ) : (
-                      <p className="text-lg font-semibold text-gray-900 truncate">
-                        Email not available
-                      </p>
-                    )}
-                  </div>
+                  {isProfileLoading ? (
+                    <p className="text-lg font-semibold text-gray-900 truncate max-w-[235px] text-left">
+                      Loading...
+                    </p>
+                  ) : userProfile?.email ? (
+                    <p className="text-lg font-semibold text-gray-900 truncate max-w-[235px] text-left">
+                      {userProfile.email}
+                    </p>
+                  ) : (
+                    <p className="text-lg font-semibold text-gray-900 truncate max-w-[235px] text-left">
+                      Email not available
+                    </p>
+                  )}
                 </div>
 
               </div>
-            )}
 
+            )}
 
             {(isGoogleLoading || !hasGoogleToken) && (
               <div className="mb-4 flex sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full">
