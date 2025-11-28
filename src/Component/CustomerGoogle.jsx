@@ -240,9 +240,14 @@ function Dashboard() {
                     alt="WhatsApp"
                     className="h-9 w-9 flex-shrink-0"
                   />
+                  {userProfile ? 
                   <p className="text-lg font-semibold text-gray-900 truncate max-w-[160px] text-right">
                     {userProfile.phoneNumber.slice(2)}
+                  </p> : 
+                  <p className="text-lg font-semibold text-gray-900 truncate max-w-[160px] text-right">
+                    Loading...
                   </p>
+                  }
                 </div>
 
                 {/* Arrow */}
@@ -257,9 +262,14 @@ function Dashboard() {
                     alt="Google Drive"
                     className="h-9 w-9 flex-shrink-0"
                   />
+                  {userProfile ? 
                   <p className="text-lg font-semibold text-gray-900 truncate max-w-[235px] text-left">
                     {userProfile.email || "Email not available"}
+                  </p> : 
+                  <p className="text-lg font-semibold text-gray-900 truncate max-w-[235px] text-left">
+                    Loading...
                   </p>
+                  }
                 </div>
 
               </div>
